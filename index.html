@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KenanLo Pro Site</title>
+
+<style>
+/* ================== ARXA FON ================== */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    color: white;
+    background: linear-gradient(-45deg, #1e3c72, #2a5298, #ff512f, #dd2476);
+    background-size: 400% 400%;
+    animation: bg 15s ease infinite;
+}
+@keyframes bg {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ================== OVERLAY ================== */
+body::before {
+    content: "";
+    position: fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background: rgba(0,0,0,0.5);
+    z-index: -1;
+}
+
+/* ================== BAŞLIQ ================== */
+h1 {
+    margin-top: 30px;
+    font-size: 40px;
+    text-shadow: 3px 3px 10px black;
+}
+
+/* ================== PARAQRAF ================== */
+p {
+    font-size: 20px;
+    text-shadow: 1px 1px 5px black;
+}
+
+/* ================== DÜYMƏLƏR ================== */
+.container {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+button {
+    padding: 15px 25px;
+    margin: 12px;
+    font-size: 16px;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    background: orange;
+    color: black;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: 0.3s;
+    box-shadow: 2px 2px 12px rgba(0,0,0,0.5);
+}
+button:hover {
+    background: yellow;
+    transform: scale(1.1);
+}
+
+/* Düymə içi logo */
+button img {
+    width: 28px;
+    height: 28px;
+}
+
+/* ================== SERVER STATUS ================== */
+#status {
+    font-size: 18px;
+    margin-top: 20px;
+    text-shadow: 1px 1px 3px black;
+}
+
+/* ================== FOOTER ================== */
+footer {
+    margin-top: 50px;
+    font-size: 16px;
+    opacity: 0.7;
+}
+
+/* ================== HOVER EFEKTLƏR ================== */
+button {
+    transition: all 0.3s ease;
+}
+button:hover {
+    box-shadow: 0px 0px 15px #fff;
+}
+
+/* ================== RESPONSIVE ================== */
+@media(max-width:800px) {
+    button { width: 80%; margin: 10px auto; }
+}
+
+/* ================== HAQQINDA BÖLMƏSİ ================== */
+#about {
+    margin-top: 50px;
+    padding: 40px;
+    background: rgba(0,0,0,0.6);
+    border-radius: 15px;
+    text-align: left;
+}
+#about h2 {
+    font-size: 30px;
+    text-shadow: 2px 2px 5px black;
+    margin-bottom: 15px;
+}
+#about h3 {
+    font-size: 24px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+#about p {
+    font-size: 18px;
+    line-height: 1.6;
+    text-shadow: 1px 1px 3px black;
+}
+</style>
+</head>
+<body>
+
+<h1>Salam dostlar, internet sitemə xoş gəldiniz 👋</h1>
+<p>Bəzi şeylər yakında gələcəkdir!</p>
+
+<div class="container">
+    <button onclick="window.open('https://discord.gg/6GstYaSnx')">
+        <img src="discord-logo.png" alt="Discord"> Discord Serverə Get
+    </button>
+    <button onclick="window.open('https://www.youtube.com/@KenanLo-M')">
+        <img src="youtube-logo.png" alt="YouTube"> YouTube Kanalım
+    </button>
+    <!-- Haqqında düyməsi -->
+    <button onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">
+        <img src="info-logo.png" alt="Haqqında"> Haqqında
+    </button>
+</div>
+
+<h2>📊 Server Status</h2>
+<p id="status">Yüklənir...</p>
+
+<!-- Haqqında bölməsi -->
+<section id="about">
+    <h2>Haqqında</h2>
+    <p>Salam dostlar bu menim saytımdır bilirem herşey zibil kimi ola biler.</p>
+    
+    <h3>BU SAYTI NE ÜÇÜN AÇDIM</h3>
+    <p>internet sayfalarım reklam yapmak ıçün açtım arkadaşlar</p>
+
+    <h3>YOUTUBE HAKKINDA</h3>
+    <p>
+        ben youtube 6 Aralık 2025 cı yıl tarıh başladım.<br>
+        ben hep minecraft videolar izledim sonra beyinde lamp yanıdı.<br>
+        sonra demiki bende bir kanalı açıcam sonra youtube video çekib youtube atcam bu sürce çokda uzun sürmedin.<br>
+        sonra şu an youtube bırakdım arkadaşlar.
+    </p>
+
+    <h3>DİSCORD HAKKINDA</h3>
+    <p>
+        ben discorda 30 ocak 2025 girdim amma discord çokda alamadım.<br>
+        sonra discordu silidim.<br>
+        9 kasım 2025 discorda tekraradan geri geldi.<br>
+        orada arkadaşlar buldum bazı engledi bazı benim sohbet etmeye başladı.<br>
+        sonra bir discord sununcosu kurudum şu an 25 üye var.<br>
+        Hekaye Bu kadar..................
+    </p>
+</section>
+
+<footer>© 2026 KenanLo. Bütün hüquqlar qorunur.</footer>
+
+<script>
+// Fake server status
+function updateStatus() {
+    let online = Math.floor(Math.random()*50);
+    let offline = Math.floor(Math.random()*100);
+    document.getElementById("status").innerText = "Online: "+online+" | Offline: "+offline;
+}
+setInterval(updateStatus,2000);
+
+// ================== DİNAMİK ELEMENTLƏR ==================
+for(let i=1;i<=20;i++){
+    let div = document.createElement("div");
+    div.style.width = "50px";
+    div.style.height = "50px";
+    div.style.background = "rgba("+Math.floor(Math.random()*255)+","+Math.floor(Math.random()*255)+","+Math.floor(Math.random()*255)+",0.7)";
+    div.style.position = "absolute";
+    div.style.top = Math.floor(Math.random()*90)+"%";
+    div.style.left = Math.floor(Math.random()*90)+"%";
+    div.style.borderRadius = "50%";
+    div.style.animation = "floatAnim "+(5+Math.random()*5)+"s ease-in-out infinite";
+    document.body.appendChild(div);
+}
+
+// Float animation for circles
+let style = document.createElement("style");
+style.innerHTML = `
+@keyframes floatAnim {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-50px); }
+    100% { transform: translateY(0px); }
+}`;
+document.head.appendChild(style);
+</script>
+
+</body>
+</html>
