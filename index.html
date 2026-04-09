@@ -1,234 +1,199 @@
 <!DOCTYPE html>
-<html lang="az">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KenanLo internet Sitesi</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KənanLo internet saytı ve xıdmeti
 
-<style>
-/* ================== ARXA FON ================== */
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    text-align: center;
-    color: white;
-    background: linear-gradient(-45deg, #1e3c72, #2a5298, #ff512f, #dd2476);
-    background-size: 400% 400%;
-    animation: bg 15s ease infinite;
-}
-@keyframes bg {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
+    </title>
+    <style>
+        /* GÖYQURŞAĞI ANİMASİYASI */
+        @keyframes rainbow {
+            0% { color: #ff0000; border-color: #ff0000; }
+            14% { color: #ff7f00; border-color: #ff7f00; }
+            28% { color: #ffff00; border-color: #ffff00; }
+            42% { color: #00ff00; border-color: #00ff00; }
+            57% { color: #0000ff; border-color: #0000ff; }
+            71% { color: #4b0082; border-color: #4b0082; }
+            85% { color: #8b00ff; border-color: #8b00ff; }
+            100% { color: #ff0000; border-color: #ff0000; }
+        }
 
-/* ================== OVERLAY ================== */
-body::before {
-    content: "";
-    position: fixed;
-    top:0; left:0;
-    width:100%; height:100%;
-    background: rgba(0,0,0,0.5);
-    z-index: -1;
-}
+        @keyframes rainbow-bg {
+            0% { background-color: #ff0000; }
+            50% { background-color: #0000ff; }
+            100% { background-color: #ff0000; }
+        }
 
-/* ================== BAŞLIQ ================== */
-h1 {
-    margin-top: 30px;
-    font-size: 40px;
-    text-shadow: 3px 3px 10px black;
-}
+        body {
+            background-color: #919c98;
+            color: white;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            text-align: center;
+            padding: 50px 20px;
+            margin: 0;
+        }
 
-/* ================== PARAQRAF ================== */
-p {
-    font-size: 20px;
-    text-shadow: 1px 1px 5px black;
-}
+        .container {
+            background-color: #161616;
+            padding: 30px;
+            border-radius: 20px;
+            display: inline-block;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 30px;
+            border: 1px solid #222;
+        }
 
-/* ================== DÜYMƏLƏR ================== */
-.container {
-    margin-top: 30px;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-button {
-    padding: 15px 25px;
-    margin: 12px;
-    font-size: 16px;
-    border: none;
-    border-radius: 15px;
-    cursor: pointer;
-    background: orange;
-    color: black;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: 0.3s;
-    box-shadow: 2px 2px 12px rgba(0,0,0,0.5);
-}
-button:hover {
-    background: yellow;
-    transform: scale(1.1);
-}
+        /* Rəngli başlıqlar */
+        h1, h2 { 
+            animation: rainbow 5s infinite linear; 
+            text-transform: uppercase;
+            font-size: 28px;
+        }
 
-/* Düymə içi logo */
-button img {
-    width: 28px;
-    height: 28px;
-}
+        .btn {
+            display: block;
+            width: 85%;
+            margin: 20px auto;
+            padding: 15px;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 12px;
+            transition: 0.3s;
+            border: none;
+            cursor: pointer;
+            color: white;
+        }
 
-/* ================== SERVER STATUS ================== */
-#status {
-    font-size: 18px;
-    margin-top: 20px;
-    text-shadow: 1px 1px 3px black;
-}
+        .youtube-btn { background-color: #ff0000; }
+        .youtube-btn:hover { transform: scale(1.05); box-shadow: 0 0 15px #ff0000; }
 
-/* ================== FOOTER ================== */
-footer {
-    margin-top: 50px;
-    font-size: 16px;
-    opacity: 0.7;
-}
+        .download-btn { background-color: #00aaff; }
+        .download-btn:hover { transform: scale(1.05); box-shadow: 0 0 15px #00aaff; }
 
-/* ================== HOVER EFEKTLƏR ================== */
-button {
-    transition: all 0.3s ease;
-}
-button:hover {
-    box-shadow: 0px 0px 15px #fff;
-}
+        /* 7 RƏNGLİ PLUS DÜYMƏSİ */
+        .plus-btn {
+            font-size: 60px;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 4px dashed;
+            animation: rainbow 3s infinite linear; /* Rənglər burada dönür */
+            background: transparent;
+            transition: 0.3s;
+        }
+        
+        .plus-btn:hover {
+            transform: rotate(90 deg);
+            background: rgba(255, 255, 255, 0.1);
+        }
 
-/* ================== RESPONSIVE ================== */
-@media(max-width:800px) {
-    button { width: 80%; margin: 10px auto; }
-}
+        #sendBtn {
+            background: #fff;
+            color: #000;
+            font-size: 18px;
+            margin-top: 20px;
+        }
 
-/* ================== HAQQINDA BÖLMƏSİ ================== */
-#about {
-    margin-top: 50px;
-    padding: 40px;
-    background: rgba(0,0,0,0.6);
-    border-radius: 15px;
-    text-align: left;
-}
-#about h2 {
-    font-size: 30px;
-    text-shadow: 2px 2px 5px black;
-    margin-bottom: 15px;
-}
-#about h3 {
-    font-size: 24px;
-    margin-top: 20px;
-    margin-bottom: 10px;
-}
-#about p {
-    font-size: 18px;
-    line-height: 1.6;
-    text-shadow: 1px 1px 3px black;
-}
-</style>
+        #sendBtn:hover {
+            background: #00ff00;
+            color: #000;
+        }
+
+        #result {
+            background: #000;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            border: 2px solid;
+            animation: rainbow 5s infinite linear;
+        }
+
+        #codeDisplay {
+            font-size: 45px;
+            font-weight: bold;
+            letter-spacing: 10px;
+            margin: 10px 0;
+        }
+
+        #qrcode {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+    </style>
 </head>
 <body>
 
-<h1>Salam dostlar, internet sitemə xoş gəldiniz 👋</h1>
-<p>Bəzi şeylər yakında gələcəkdir!</p>
-<h1>Minecraft ipim:kenanLo-ysC4.aternos.me:38483</h1>
-    <h3>bu sunucu bazı  zamanlar aktif olur
-    bazı zamanlarda kapalı olur</h3>
-    <h4>bu sunucu tam aktif olma zamanı haziranda açık olacak
-    
-    </h4>
-<div class="container">
-    <button onclick="window.open('https://discord.gg/6GstYaSnx')">
-        <img src="discord-logo.png" alt="Discord"> Discord Serverə Get
-    </button>
-    <button onclick="window.open('https://www.youtube.com/@KenanLo-M')">
-        <img src="youtube-logo.png" alt="YouTube"> YouTube Kanalım
-    </button>
-    <!-- Haqqında düyməsi -->
-    <button onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">
-        <img src="info-logo.png" alt="Haqqında"> Haqqında
-    </button>
-</div>
+    <div class="container">
+        <h1>KenanLo ınternet transfer system xoş geldiniz</h1>
+        <p>kenanLo və Sürətli Transfer Mərkəzi</p>
 
-<h2>📊 Server Status</h2>
-<p id="status">Yüklənir...</p>
+        <a href="https://www.youtube.com/@KenanLo-Minecraft" target="_blank" class="btn youtube-btn">
+            YouTube Kanalım
+        </a>
+    </div>
 
-<!-- Haqqında bölməsi -->
-<section id="about">
-    <h2>Haqqında</h2>
-    <p>Salam dostlar bu menim saytımdır bilirem herşey zibil kimi ola biler.</p>
-    
-    <h3>BU SAYTI NE ÜÇÜN AÇDIM</h3>
-    <p>internet sayfalarım reklam yapmak için açtım arkadaşlar</p>
+    <div class="container">
+        <h2>Anzola Transfer</h2>
+        
+        <div class="plus-btn" onclick="document.getElementById('fileInput').click()">
+            +
+        </div>
+        
+        <input type="file" id="fileInput" style="display:none" onchange="document.getElementById('fileNameText').innerText = 'Seçildi: ' + this.files[0].name">
+        <p id="fileNameText" style="color: #00ff00;">Fayl seçilməyib</p>
+        
+        <button id="sendBtn" class="btn" onclick="startTransfer()">GÖNDƏR</button>
 
-    <h3>YOUTUBE HAKKINDA</h3>
-    <p>
-        ben youtube 6 Aralık 2025 cı yıl tarıh başladım.<br>
-        ben hep minecraft videolar izledim sonra beyinde lamp yanıdı.<br>
-        sonra demiki bende bir kanalı açıcam sonra youtube video çekib youtube atcam bu sürce çokda uzun sürmedin.<br>
-        sonra şu an youtube bırakdım arkadaşlar.
-    </p>
+        <div id="result" style="display:none;">
+            <p>Sənin 6 rəqəmli kodun:</p>
+            <div id="codeDisplay"></div>
+            <div id="qrcode"></div>
+        </div>
+    </div>
 
-    <h3>DİSCORD HAKKINDA</h3>
-    <p>
-        ben discorda 30 ocak 2025 girdim amma discord çokda alamadım.<br>
-        sonra discordu silidim.<br>
-        9 kasım 2025 discorda tekraradan geri geldi.<br>
-        orada arkadaşlar buldum bazı engledi bazı benim sohbet etmeye başladı.<br>
-        sonra bir discord sununcosu kurudum şu an 25 üye var.<br>
-        Hekaye Bu kadar..................
-    </p>
-</section>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        function startTransfer() {
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput.files.length === 0) return alert("Fayl seç!");
 
-<footer>© 2022 - 2026 KenanLo. Bütün hüquqlar qorunur.</footer>
+            const btn = document.getElementById('sendBtn');
+            btn.innerText = "GÖNDƏRİLİR...";
+            btn.disabled = true;
 
-<script>
-// Fake server status
-function updateStatus() {
-    let online = Math.floor(Math.random()*50);
-    let offline = Math.floor(Math.random()*100);
-    document.getElementById("status").innerText = "Online: "+online+" | Offline: "+offline;
-}
-setInterval(updateStatus,2000);
+            setTimeout(() => {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
 
-// ================== DİNAMİK ELEMENTLƏR ==================
-for(let i=1;i<=20;i++){
-    let div = document.createElement("div");
-    div.style.width = "50px";
-    div.style.height = "50px";
-    div.style.background = "rgba("+Math.floor(Math.random()*255)+","+Math.floor(Math.random()*255)+","+Math.floor(Math.random()*255)+",0.7)";
-    div.style.position = "absolute";
-    div.style.top = Math.floor(Math.random()*90)+"%";
-    div.style.left = Math.floor(Math.random()*90)+"%";
-    div.style.borderRadius = "50%";
-    div.style.animation = "floatAnim "+(5+Math.random()*5)+"s ease-in-out infinite";
-    document.body.appendChild(div);
-}
-
-// Float animation for circles
-let style = document.createElement("style");
-style.innerHTML = `
-@keyframes floatAnim {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-50px); }
-    100% { transform: translateY(0px); }
-}`;
-document.head.appendChild(style);
-</script>
-
+                fetch('/upload', { method: 'POST', body: formData })
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('result').style.display = 'block';
+                    document.getElementById('codeDisplay').innerText = data.code;
+                    btn.innerText = "BİTDİ!";
+                    
+                    document.getElementById('qrcode').innerHTML = "";
+                    new QRCode(document.getElementById("qrcode"), {
+                        text: window.location.origin + "/download/" + data.code,
+                        width: 150,
+                        height: 150
+                    });
+                });
+            }, 2000);
+        }
+    </script>
 </body>
-<a href="cat1.png.png" target="_blank"><button>
-    <img src="cat1.png.png" alt="cat"> Kedili Düğme
-</button></a>
-<a href="cat2.png.png" target="_blank"><button>
-    <img src="cat2.png.png" alt="cat"> Kedili Düğme
-</button></a>
-<a href="cat3.png.png" target="_blank"><button>
-    <img src="cat3.png.png" alt="cat"> Kedili Düğme
 </html>
-
-    
-    
+<a href="SENİN_GOOGLE_DRIVE_LİNKİN_BURA" target="_blank" class="btn download-btn">
+    Premiere Pro Set-up.exe Yüklə
+</a>
