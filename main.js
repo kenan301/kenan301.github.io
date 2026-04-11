@@ -20,7 +20,8 @@ function startTransfer() {
     formData.append('file', fileInput.files[0]);
 
     // Python Flask serverinə sorğu
-    fetch('/upload', {
+    fetch('https://c3ab08e42f49e3b1-158-181-46-82.serveousercontent.com
+', {
         method: 'POST',
         body: formData
     })
