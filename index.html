@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tom Gold Run Pro - Ultimate 3D Runner</title>
+    <style>
+        * { box-sizing: border-box; user-select: none; }
+        body { margin: 0; overflow: hidden; background-color: #050515; font-family: 'Segoe UI', sans-serif; }
+        #canvas-container { width: 100vw; height: 100vh; position: absolute; z-index: 1; }
+        
+        /* UI Panel */
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; padding: 25px; display: flex; flex-direction: column; justify-content: space-between; }
+        .hud-box { background: rgba(0, 0, 0, 0.6); padding: 15px 25px; border-radius: 15px; border: 2px solid #ffd700; color: white; font-size: 24px; font-weight: bold; backdrop-filter: blur(5px); box-shadow: 0 0 15px rgba(255,215,0,0.3); display: inline-block; }
+        #score-container { display: flex; gap: 20px; }
+        .gold-text { color: #ffd700; }
+        .dist-text { color: #00ffcc; }
+        
+        /* Power-up Göstəriciləri */
+        #active-powers { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        .power-bar { width: 200px; height: 15px; background: #222; border-radius: 10px; overflow: hidden; border: 1px solid #fff; display: none; }
+        .power-progress { height: 100%; width: 100%; transition: width 0.1s linear; }
+        #magnet-bar .power-progress { background: #ff3333; }
+        #multiplier-bar .power-progress { background: #33ff33; }
+        
+        /* Ekran Pridmetləri */
+        .screen-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 20; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); }
+        .btn { padding: 15px 40px; font-size: 28px; font-weight: bold; color: #fff; background: linear-gradient(45deg, #ff9900, #ff5500); border: none; border-radius: 50px; cursor: pointer; margin-top: 20px; pointer-events: auto; box-shadow: 0 5px 20px rgba(255,85,0,0.4); transition: transform 0.2s; }
+        .btn:hover { transform: scale(1.05); }
+        
+        #menu-screen { background: radial-gradient(circle, #1a2a6c, #b21f1f, #fdbb2d); }
+        #game-over-screen { display: none; }
+        .title { font-size: 64px; color: white; text-align: center; text-shadow: 0 5px 15px rgba(0,0,0,0.5); font-weight: 900; letter-spacing: 2px; margin-bottom: 10px; }
+        
+        /* İdarəetmə təlimatı */
+        .controls-hint { color: #ddd; font-size: 16px; margin-top: 30px; text-align: center; line-height: 1.6; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 10px; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+
+    <div id="ui-layer">
+        <div id="score-container">
+            <div class="hud-box">Qızıl: <span id="gold-count" class="gold-text">0</span></div>
+            <div class="hud-box">Məsafə: <span id="distance-count" class="dist-text">0</span>m</div>
+        </div>
+        
+        <div id="active-powers">
+            <div id="magnet-bar" class="power-bar">
+                <div style="color: white; font-size: 12px; position: absolute; margin-left: 5px;">MAQNİT</div>
+                <div class="power-progress"></div>
+            </div>
+            <div id="multiplier-bar" class="power-bar">
+                <div style="color: white; font-size: 12px; position: absolute; margin-left: 5px;">2X XAL</div>
+                <div class="power-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="menu-screen" class="screen-overlay">
+        <div class="title">TOM GOLD RUN<br><span style="font-size: 32px; color: #ffd700;">HTML5 EDITION</span></div>
+        <button class="btn" onclick="startGame()">OYUNA BAŞLA</button>
+        <div class="controls-hint">
+            <strong>İDARƏETMƏ:</strong><br>
+            Sol / Sağ Ox Düymələri — Zolağı Dəyişmək<br>
+            Yuxarı Ox Düyməsi — Tullanmaq (Jump)<br>
+            Aşağı Ox Düyməsi — Əyilmək (Duck/Slide)
+        </div>
+    </div>
+
+    <div id="game-over-screen" class="screen-overlay">
+        <div class="title" style="color: #ff3333;">OYUN BİTDİ!</div>
+        <div class="hud-box" style="margin-bottom: 20px;">
+            Toplam Qızıl: <span id="final-gold" class="gold-text">0</span><br>
+            Rekord Məsafə: <span id="final-distance" class="dist-text">0</span>m
+        </div>
+        <button class="btn" onclick="restartGame()">YENİDƏN SINAVA</button>
+    </div>
+
+    <script>
+        // --- QLOBAL OYUN ARXİTEKTURASI ---
+        let scene, camera, renderer;
+        let player, playerGroup;
+        let lanes = [-2.5, 0, 2.5]; 
+        let currentLane = 1;
+        
+        // Oyun Mexanikası State-ləri
+        let gameRunning = false;
+        let speed = 0.3;
+        const maxSpeed = 0.8;
+        let gold = 0;
+        let distance = 0;
+        
+        // Oyunçu Fizikası və Animasiyası
+        let playerVelocityY = 0;
+        let isJumping = false;
+        let isDucking = false;
+        let duckTimer = 0;
+        const gravity = -0.015;
+        
+        // Obyekt Massivləri
+        let obstacles = [];
+        let coins = [];
+        let powerUps = [];
+        let environmentDecoration = [];
+        
+        // Power-up Timer-ləri
+        let powerActive = { magnet: false, multiplier: false };
+        let powerTimers = { magnet: 0, multiplier: 0 };
+        const powerDuration = 500; // kadr sayı ilə
+
+        // --- SƏHNƏNİN QURULMASI ---
+        function initEngine() {
+            const container = document.getElementById('canvas-container');
+            
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a0933); // Gecə/Neon şəhər atmosferi
+            scene.fog = new THREE.FogExp2(0x1a0933, 0.03);
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 4, 7);
+            camera.lookAt(0, 1.5, -2);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            container.appendChild(renderer.domElement);
+
+            // İşıqlar
+            const ambient = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambient);
+
+            const dirLight = new THREE.DirectionalLight(0xffaa66, 1);
+            dirLight.position.set(10, 20, 10);
+            dirLight.castShadow = true;
+            scene.add(dirLight);
+
+            // Sonsuz Yol arxitekturası (Modulyar seqmentlər)
+            buildTrack();
+            buildPlayer();
+
+            window.addEventListener('keydown', handleControls);
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        // --- YOL VƏ ƏTRAF MÜHİT ---
+        function buildTrack() {
+            // Əsas asfalt
+            const roadGeo = new THREE.PlaneGeometry(8, 2000);
+            const roadMat = new THREE.MeshStandardMaterial({ color: 0x111118, roughness: 0.8 });
+            const road = new THREE.Mesh(roadGeo, roadMat);
+            road.rotation.x = -Math.PI / 2;
+            road.position.z = -900;
+            road.receiveShadow = true;
+            scene.add(road);
+
+            // Zolaq sərhədləri (Yarı-şəffaf neon xətlər)
+            for(let i = 0; i < 100; i++) {
+                const lineGeo = new THREE.PlaneGeometry(0.15, 4);
+                const lineMat = new THREE.MeshBasicMaterial({ color: 0x00ffcc, transparent: true, opacity: 0.4 });
+                
+                let l1 = new THREE.Mesh(lineGeo, lineMat); l1.rotation.x = -Math.PI/2; l1.position.set(-1.25, 0.02, -i * 15); scene.add(l1);
+                let l2 = l1.clone(); l2.position.x = 1.25; scene.add(l2);
+                
+                // Şəhər binaları dekorasiyası (Yolun kənarında)
+                createBuilding(-8, -i * 20);
+                createBuilding(8, -i * 20);
+            }
+        }
+
+        function createBuilding(x, z) {
+            const h = Math.random() * 15 + 10;
+            const geo = new THREE.BoxGeometry(4, h, 4);
+            const mat = new THREE.MeshStandardMaterial({ color: 0x1d1d2c, roughness: 0.5 });
+            const b = new THREE.Mesh(geo, mat);
+            b.position.set(x, h/2, z);
+            scene.add(b);
+            environmentDecoration.push(b);
+        }
+
+        // --- OYUNÇU MODELLƏŞDİRİLMƏSİ (TOM) ---
+        function buildPlayer() {
+            playerGroup = new THREE.Group();
+
+            // Gövdə
+            const bodyGeo = new THREE.BoxGeometry(0.9, 1.2, 0.7);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0xdd8800, roughness: 0.3 });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.position.y = 0.8;
+            body.castShadow = true;
+            playerGroup.add(body);
+
+            // Baş
+            const headGeo = new THREE.BoxGeometry(0.7, 0.7, 0.7);
+            const headMat = new THREE.MeshStandardMaterial({ color: 0xffbb44 });
+            const head = new THREE.Mesh(headGeo, headMat);
+            head.position.set(0, 1.65, 0.1);
+            playerGroup.add(head);
+
+            // Gözlər (Detallaşdırma)
+            const eyeGeo = new THREE.BoxGeometry(0.15, 0.15, 0.1);
+            const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const e1 = new THREE.Mesh(eyeGeo, eyeMat); e1.position.set(-0.2, 1.7, 0.45); playerGroup.add(e1);
+            const e2 = e1.clone(); e2.position.x = 0.2; playerGroup.add(e2);
+
+            playerGroup.position.set(lanes[currentLane], 0, 0);
+            scene.add(playerGroup);
+        }
+
+        // --- PROCEDURAL GENERASİYA (MANEƏ, QIZIL, POWERUP) ---
+        function spawnSpawner() {
+            if (!gameRunning) return;
+
+            // Təsadüfi zolaq seçimi
+            const targetLane = lanes[Math.floor(Math.random() * lanes.length)];
+            const spawnZ = -80; 
+
+            const r = Math.random();
+            if (r < 0.4) {
+                // Alçaq maneə (Üstündən tullanmaq olar)
+                const obsGeo = new THREE.BoxGeometry(1.8, 0.8, 0.6);
+                const obsMat = new THREE.MeshStandardMaterial({ color: 0xff2255, metalness: 0.3 });
+                const obs = new THREE.Mesh(obsGeo, obsMat);
+                obs.position.set(targetLane, 0.4, spawnZ);
+                obs.userData = { type: 'barrier_low' };
+                scene.add(obs);
+                obstacles.push(obs);
+            } 
+            else if (r < 0.6) {
+                // Hündür maneə (Altından əyilmək lazımdır)
+                const obsGeo = new THREE.BoxGeometry(2, 1.2, 0.6);
+                const obsMat = new THREE.MeshStandardMaterial({ color: 0x3366ff });
+                const obs = new THREE.Mesh(obsGeo, obsMat);
+                obs.position.set(targetLane, 1.8, spawnZ); // Havada asılı
+                obs.userData = { type: 'barrier_high' };
+                scene.add(obs);
+                obstacles.push(obs);
+            }
+            else if (r < 0.9) {
+                // Qızıl silsiləsi (3 ədəd ard-arda)
+                for(let i=0; i<3; i++) {
+                    const coinGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.08, 16);
+                    const coinMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.9, roughness: 0.1 });
+                    const coin = new THREE.Mesh(coinGeo, coinMat);
+                    coin.rotation.x = Math.PI / 2;
+                    coin.position.set(targetLane, 0.6, spawnZ - (i * 2.5));
+                    scene.add(coin);
+                    coins.push(coin);
+                }
+            }
+            else {
+                // Power-up generatoru (Maqnit və ya Multiplier)
+                const type = Math.random() > 0.5 ? 'magnet' : 'multiplier';
+                const pGeo = new THREE.SphereGeometry(0.4, 16, 16);
+                const pMat = new THREE.MeshBasicMaterial({ color: type === 'magnet' ? 0xff3333 : 0x33ff33 });
+                const pUp = new THREE.Mesh(pGeo, pMat);
+                pUp.position.set(targetLane, 0.8, spawnZ);
+                pUp.userData = { type: type };
+                scene.add(pUp);
+                powerUps.push(pUp);
+            }
+        }
+
+        // --- FİZİKA VƏ HƏRƏKƏT DÖVRÜ ---
+        function updatePhysics() {
+            // Tullanma fizikası
+            if (isJumping) {
+                playerGroup.position.y += playerVelocityY;
+                playerVelocityY += gravity;
+
+                if (playerGroup.position.y <= 0) {
+                    playerGroup.position.y = 0;
+                    isJumping = false;
+                    playerVelocityY = 0;
+                }
+            }
+
+            // Əyilmə mexanikası
+            if (isDucking) {
+                duckTimer--;
+                if (duckTimer <= 0) {
+                    isDucking = false;
+                    playerGroup.scale.y = 1.0; // Normal ölçüyə qayıt
+                }
+            }
+
+            // Zolaqlar arası hamar keçid (Lerp funksiyası)
+            const targetX = lanes[currentLane];
+            playerGroup.position.x += (targetX - playerGroup.position.x) * 0.25;
+        }
+
+        function updateEntities() {
+            // Sürət artımı
+            if (speed < maxSpeed) speed += 0.00005;
+            distance += Math.floor(speed * 2);
+            document.getElementById('distance-count').innerText = distance;
+
+            // Maneələrin hərəkəti
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                obstacles[i].position.z += speed * 60 * 0.016;
+
+                // Toqquşma yoxlanılması (AABB qutusu təxmini)
+                let pBox = new THREE.Box3().setFromObject(playerGroup);
+                let oBox = new THREE.Box3().setFromObject(obstacles[i]);
+
+                if (pBox.intersectsBox(oBox)) {
+                    gameOver();
+                    return;
+                }
+
+                if (obstacles[i].position.z > 10) {
+                    scene.remove(obstacles[i]);
+                    obstacles.splice(i, 1);
+                }
+            }
+
+            // Qızılların hərəkəti və Maqnit effekti
+            for (let i = coins.length - 1; i >= 0; i--) {
+                coins[i].rotation.z += 0.05;
+
+                if (powerActive.magnet && coins[i].position.z > -30) {
+                    // Qızılı oyunçuya tərəf çək
+                    coins[i].position.x += (playerGroup.position.x - coins[i].position.x) * 0.2;
+                    coins[i].position.y += (playerGroup.position.y + 0.6 - coins[i].position.y) * 0.2;
+                    coins[i].position.z += (playerGroup.position.z - coins[i].position.z) * 0.2;
+                } else {
+                    coins[i].position.z += speed * 60 * 0.016;
+                }
+
+                // Qızıl toplandı?
+                if (coins[i].position.distanceTo(playerGroup.position) < 1.2) {
+                    let reward = powerActive.multiplier ? 20 : 10;
+                    gold += reward;
+                    document.getElementById('gold-count').innerText = gold;
+                    scene.remove(coins[i]);
+                    coins.splice(i, 1);
+                    continue;
+                }
+
+                if (coins[i].position.z > 10) {
+                    scene.remove(coins[i]);
+                    coins.splice(i, 1);
+                }
+            }
+
+            // Power-up-ların hərəkəti
+            for (let i = powerUps.length - 1; i >= 0; i--) {
+                powerUps[i].position.z += speed * 60 * 0.016;
+
+                if (powerUps[i].position.distanceTo(playerGroup.position) < 1.2) {
+                    activatePower(powerUps[i].userData.type);
+                    scene.remove(powerUps[i]);
+                    powerUps.splice(i, 1);
+                    continue;
+                }
+
+                if (powerUps[i].position.z > 10) {
+                    scene.remove(powerUps[i]);
+                    powerUps.splice(i, 1);
+                }
+            }
+
+            // Binaların geriyə axması (Sonsuzluq effekti)
+            environmentDecoration.forEach(b => {
+                b.position.z += speed * 60 * 0.016;
+                if(b.position.z > 20) b.position.z = -180;
+            });
+
+            // Power-up barlarının idarə olunması
+            updatePowerTimers();
+        }
+
+        // --- POWER-UP SİSTEMİ ---
+        function activatePower(type) {
+            powerActive[type] = true;
+            powerTimers[type] = powerDuration;
+            document.getElementById(`${type}-bar`).style.display = 'block';
+        }
+
+        function updatePowerTimers() {
+            ['magnet', 'multiplier'].forEach(type => {
+                if (powerActive[type]) {
+                    powerTimers[type]--;
+                    let percent = (powerTimers[type] / powerDuration) * 100;
+                    document.querySelector(`#${type}-bar .power-progress`).style.width = percent + '%';
+                    
+                    if (powerTimers[type] <= 0) {
+                        powerActive[type] = false;
+                        document.getElementById(`${type}-bar`).style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        // --- İDARƏETMƏ SİSTEMİ ---
+        function handleControls(e) {
+            if (!gameRunning) return;
+
+            if ((e.key === "ArrowLeft" || e.key === "a") && currentLane > 0) {
+                currentLane--;
+            }
+            if ((e.key === "ArrowRight" || e.key === "d") && currentLane < 2) {
+                currentLane++;
+            }
+            if ((e.key === "ArrowUp" || e.key === "w") && !isJumping && !isDucking) {
+                isJumping = true;
+                playerVelocityY = 0.35; // Tullanma gücü
+            }
+            if ((e.key === "ArrowDown" || e.key === "s") && !isJumping && !isDucking) {
+                isDucking = true;
+                duckTimer = 40; // kadr müddəti
+                playerGroup.scale.y = 0.4; // Oyunçunu basıq et (əyilmə effekti)
+            }
+        }
+
+        // --- OYUN AYARLARI VƏ DÖVRÜNY QUYRUĞU ---
+        let spawnInterval;
+        function animate() {
+            requestAnimationFrame(animate);
+            if (gameRunning) {
+                updatePhysics();
+                updateEntities();
+            }
+            renderer.render(scene, camera);
+        }
+
+        function startGame() {
+            document.getElementById('menu-screen').style.display = 'none';
+            gameRunning = true;
+            spawnInterval = setInterval(spawnSpawner, 900);
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            clearInterval(spawnInterval);
+            document.getElementById('game-over-screen').style.display = 'flex';
+            document.getElementById('final-gold').innerText = gold;
+            document.getElementById('final-distance').innerText = distance;
+        }
+
+        function restartGame() {
+            // Səhnə təmizliyi
+            obstacles.forEach(o => scene.remove(o));
+            coins.forEach(c => scene.remove(c));
+            powerUps.forEach(p => scene.remove(p));
+            obstacles = []; coins = []; powerUps = [];
+            
+            // Re-set data
+            gold = 0; distance = 0; speed = 0.3; currentLane = 1;
+            powerActive = { magnet: false, multiplier: false };
+            document.getElementById('gold-count').innerText = "0";
+            document.getElementById('magnet-bar').style.display = 'none';
+            document.getElementById('multiplier-bar').style.display = 'none';
+            
+            document.getElementById('game-over-screen').style.display = 'none';
+            gameRunning = true;
+            spawnInterval = setInterval(spawnSpawner, 900);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Mühərriki işə sal
+        initEngine();
+        animate();
+    </script>
+</body>
+</html>
